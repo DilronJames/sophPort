@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ bio.name }}{% endblock %}</title>
+    <meta name="description" content="{{ bio.name }}. {{ bio.tagline }}">
+    <script>
+        (function() {
+            document.documentElement.classList.add('js');
+            try {
+                const saved = localStorage.getItem('theme');
+                if (saved === 'light') {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Sky backdrop: sunny day in light mode, starry night in dark mode -->
+    <div class="sky" aria-hidden="true">
+        <div class="sun"></div>
+        <div class="moon"></div>
+        <div class="stars"></div>
+    </div>
+
+    <nav class="nav">
+        <a class="nav-logo" href="{{ url_for('index') }}">
+            <span class="nav-name">{{ bio.first_name }} {{ bio.name.split(' ')[-1] }}</span>
+        </a>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="{{ url_for('index') }}#work">Work</a></li>
+                <li><a href="{{ url_for('index') }}#about">About</a></li>
+                <li><a href="{{ url_for('index') }}#contact">Contact</a></li>
+                <li><a href="{{ contact.github }}" target="_blank" rel="noopener">GitHub</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"/></svg>
+            </button>
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-col">
+                <p class="footer-name">{{ bio.name }}</p>
+                <p class="footer-meta">Built with Python and Flask.</p>
+                <p class="footer-meta footer-ai">Made with the assistance of artificial intelligence.</p>
+            </div>
+            <div class="footer-col footer-links">
+                <a href="{{ url_for('index') }}#work">Work</a>
+                <a href="{{ url_for('index') }}#about">About</a>
+                {% if contact.github %}<a href="{{ contact.github }}" target="_blank" rel="noopener">GitHub</a>{% endif %}
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

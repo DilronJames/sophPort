@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}404 · {{ bio.name }}{% endblock %}
+{% block content %}
+<section class="section error-section">
+    <h1 class="error-code grad-text">404</h1>
+    <p class="error-msg">That page took a wrong turn at a null pointer.</p>
+    <a class="btn btn-primary" href="{{ url_for('index') }}">← Back home</a>
+</section>
+{% endblock %}

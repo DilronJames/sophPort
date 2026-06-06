@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block title %}Stock Backtester · {{ bio.name }}{% endblock %}
+
+{% block content %}
+<section class="tool-hero">
+    <h1 class="tool-title">Stock backtester</h1>
+    <p class="tool-sub">
+        This runs one of the most basic trading strategies there is, the moving-average crossover,
+        on real historical prices. It's a simple, theoretical model built for learning how backtesting
+        works, not a real trading system. The question it answers: would this strategy have beaten just
+        buying the stock and holding it?
+    </p>
+    <p class="tool-note">
+        Heads up: this is a deliberately simple, theoretical strategy. Real trading involves fees, taxes,
+        and a lot more nuance, so don't use these results to make actual investment decisions.
+    </p>
+</section>
+
+<section class="bt-shell">
+
+    <!-- ── Left: configuration form ───────────────────────── -->
+    <aside class="bt-form-card">
+        <form method="POST" action="{{ url_for('backtest_page') }}" class="bt-form" autocomplete="off">
+            <h2 class="bt-form-title">Configure backtest</h2>
+
+            <label class="bt-field">
+                <span data-tip="The stock symbol you want to test. Use the same letters you'd type into Google Finance, e.g. AAPL for Apple, MSFT for Microsoft, TSLA for Tesla.">Ticker symbol</span>
+                <input name="ticker" type="text" value="{{ form.ticker }}" required
+                       maxlength="10" placeholder="AAPL" pattern="[A-Za-z\.\-]{1,10}">
+            </label>
+
+            <div class="bt-field-row">
+                <label class="bt-field">
+                    <span data-tip="The date to start the simulation from. The further back you go, the more trades you'll see.">Start date</span>
+                    <input name="start" type="date" value="{{ form.start }}" required>
+                </label>
+                <label class="bt-field">
+                    <span data-tip="Where the simulation ends. Results are based on historical data up to this date.">End date</span>
+                    <input name="end" type="date" value="{{ form.end }}" required>
+                </label>
+            </div>
+
+            <label class="bt-field">
+                <span data-tip="The amount of money you're pretending to invest. No real money is involved, it's all just a simulation.">Starting capital ($)</span>
+                <input name="capital" type="number" min="1" step="any" value="{{ form.capital }}" required>
+            </label>
+
+            <div class="bt-field-row">
+                <label class="bt-field">
+                    <span data-tip="Faster moving average. Reacts to short-term price changes. A smaller number trades more often.">Short MA window</span>
+                    <input name="short" type="number" min="2" max="200" value="{{ form.short }}" required>
+                </label>
+                <label class="bt-field">
+                    <span data-tip="Slower moving average. Defines the longer-term trend. Must be larger than the short window. Classic combos: 20/50 or 50/200.">Long MA window</span>
+                    <input name="long" type="number" min="3" max="400" value="{{ form.long }}" required>
+                </label>
+            </div>
+
+            <input type="hidden" name="theme" id="btThemeField" value="light">
+
+            <button class="btn btn-primary bt-submit" type="submit">Run backtest</button>
+
+            <details class="bt-help">
+                <summary>What is a moving-average crossover?</summary>
+                <p>
+                    A moving average smooths out a stock's price over a set number of days.
+                    This strategy watches two of them: a fast one and a slow one.
+                    <strong>Buy</strong> when the fast line crosses above the slow one (the stock is picking up momentum).
+                    <strong>Sell</strong> when it crosses back below (momentum fading).
+                    It's one of the oldest and most studied strategies in trading.
+                </p>
+                <p>It goes all-in or all-out. No partial positions, no borrowing, no trading fees.</p>
+                <p class="bt-help-note">
+                    This is a simplified, theoretical version meant for learning. A real strategy would
+                    account for fees, taxes, slippage, and a lot more.
+                </p>
+            </details>
+        </form>
+    </aside>
+
+    <!-- ── Right: results ──────────────────────────────────── -->
+    <div class="bt-results">
+
+        {% if error %}
+        <div class="bt-error">
+            <strong>Something went wrong.</strong>
+            <p>{{ error }}</p>
+        </div>
+        {% endif %}
+
+        {% if not result and not error %}
+        <!-- Empty state -->
+        <div class="bt-empty">
+            <div class="bt-empty-icon">?</div>
+            <h3>Did the strategy beat the market?</h3>
+            <p>Fill in the form and hit <em>Run backtest</em> to find out.</p>
+            <div class="bt-empty-ideas">
+                <p class="bt-empty-label">Try these:</p>
+                <div class="bt-empty-chips">
+                    <span class="chip">AAPL 2020→2024</span>
+                    <span class="chip">NVDA 2022→2024</span>
+                    <span class="chip">TSLA 2019→2023</span>
+                    <span class="chip">SPY 2018→2024</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if result %}
+        {% set p = result.plain %}
+
+        <!-- 1. Story: headline answer in plain English -->
+        <div class="bt-story {{ 'bt-story-win' if p.won else 'bt-story-loss' }}">
+            <div class="bt-story-verdict">
+                <span class="bt-verdict-icon">{{ '✓' if p.won else '✗' }}</span>
+                <div>
+                    <strong class="bt-verdict-label">{{ p.verdict }}</strong>
+                    <p>{{ p.verdict_detail }}</p>
+                </div>
+            </div>
+            <p class="bt-headline">{{ p.headline }}</p>
+        </div>
+
+        {% for w in result.warnings %}
+        <div class="bt-warn">{{ w }}</div>
+        {% endfor %}
+
+        <!-- 2. Plain-English narrative -->
+        <div class="bt-narrative">
+            <p>{{ p.narrative }}</p>
+        </div>
+
+        <!-- 3. Three big numbers: Return / Risk / Activity -->
+        <div class="bt-trio">
+            <div class="bt-trio-cell">
+                <span class="bt-trio-label">Return</span>
+                <span class="bt-trio-value {{ 'bt-pos' if result.strategy.total_return >= 0 else 'bt-neg' }}">
+                    {{ '%+.1f'|format(result.strategy.total_return * 100) }}%
+                </span>
+                <span class="bt-trio-sub">
+                    vs {{ '%+.1f'|format(result.buy_hold.total_return * 100) }}% buy-and-hold
+                </span>
+                <span class="bt-trio-def">Total gain or loss on your money</span>
+            </div>
+            <div class="bt-trio-cell">
+                <span class="bt-trio-label">Worst drop</span>
+                <span class="bt-trio-value bt-neg">
+                    {{ '%.1f'|format(result.strategy.max_drawdown * 100) }}%
+                </span>
+                <span class="bt-trio-sub">
+                    vs {{ '%.1f'|format(result.buy_hold.max_drawdown * 100) }}% buy-and-hold
+                </span>
+                <span class="bt-trio-def">Biggest peak-to-bottom decline</span>
+            </div>
+            <div class="bt-trio-cell">
+                <span class="bt-trio-label">Trades made</span>
+                <span class="bt-trio-value">{{ result.trade_stats.num_trades }}</span>
+                <span class="bt-trio-sub">
+                    {{ result.strategy.exposure_fmt }} of days invested
+                </span>
+                <span class="bt-trio-def">Complete buy-then-sell round trips</span>
+            </div>
+        </div>
+
+        <!-- 4. Chart -->
+        {% if chart %}
+        <figure class="bt-chart">
+            <img src="data:image/png;base64,{{ chart }}"
+                 alt="Backtest chart for {{ result.ticker }}">
+            <figcaption class="bt-chart-caption">
+                <strong>Top:</strong> Price with the two moving averages. Green triangles = buy. Red triangles = sell.
+                &nbsp;·&nbsp;
+                <strong>Middle:</strong> How your portfolio value changed over time vs. buy-and-hold (dashed).
+                &nbsp;·&nbsp;
+                <strong>Bottom:</strong> Drawdown, meaning how far below a previous high you were at each point.
+            </figcaption>
+        </figure>
+        {% endif %}
+
+        <!-- 5. Advanced stats (collapsed) -->
+        <details class="bt-advanced">
+            <summary>Advanced statistics</summary>
+            <div class="bt-grid-2">
+                <div class="bt-card">
+                    <h3>Strategy vs. buy-and-hold</h3>
+                    <dl class="bt-defs">
+                        <div>
+                            <dt><span data-tip="Compound Annual Growth Rate. The average yearly return, accounting for compounding. Think of it like an interest rate on your investment.">Avg yearly return (CAGR)</span></dt>
+                            <dd class="{{ 'bt-pos' if result.strategy.cagr >= 0 else 'bt-neg' }}">{{ result.strategy.cagr_fmt }} <span class="bt-vs">vs {{ result.buy_hold.cagr_fmt }}</span></dd>
+                        </div>
+                        <div>
+                            <dt><span data-tip="How much the portfolio swung up and down day-to-day, annualised. Higher = more stressful to hold.">Price swinginess (Volatility)</span></dt>
+                            <dd>{{ result.strategy.volatility_fmt }} <span class="bt-vs">vs {{ result.buy_hold.volatility_fmt }}</span></dd>
+                        </div>
+                        <div>
+                            <dt><span data-tip="Risk-adjusted return score. Measures how much return you got per unit of risk taken. Above 1 is good; above 2 is excellent.">Risk-adjusted return (Sharpe)</span></dt>
+                            <dd>{{ result.strategy.sharpe_fmt }} <span class="bt-vs">vs {{ result.buy_hold.sharpe_fmt }}</span></dd>
+                        </div>
+                        <div>
+                            <dt><span data-tip="Like Sharpe, but it only counts the bad swings against you, since upward swings aren't really a risk.">Downside risk score (Sortino)</span></dt>
+                            <dd>{{ result.strategy.sortino_fmt }}</dd>
+                        </div>
+                        <div>
+                            <dt><span data-tip="Percent of trading days the strategy was actually holding the stock (vs. sitting in cash).">Time invested</span></dt>
+                            <dd>{{ result.strategy.exposure_fmt }}</dd>
+                        </div>
+                    </dl>
+                </div>
+
+                <div class="bt-card">
+                    <h3>Trade breakdown</h3>
+                    <dl class="bt-defs">
+                        <div>
+                            <dt><span data-tip="How many completed buy→sell round trips happened in the backtest.">Completed trades</span></dt>
+                            <dd>{{ result.trade_stats.num_trades }}</dd>
+                        </div>
+                        <div>
+                            <dt><span data-tip="Out of all completed trades, what percentage closed at a profit.">Winning trades</span></dt>
+                            <dd>{{ result.trade_stats.win_rate_fmt }}</dd>
+                        </div>
+                        <div>
+                            <dt><span data-tip="Average gain when the trade made money.">Avg winning trade</span></dt>
+                            <dd class="bt-pos">{{ result.trade_stats.avg_win_fmt }}</dd>
+                        </div>
+                        <div>
+                            <dt><span data-tip="Average loss when the trade lost money.">Avg losing trade</span></dt>
+                            <dd class="bt-neg">{{ result.trade_stats.avg_loss_fmt }}</dd>
+                        </div>
+                        <div>
+                            <dt><span data-tip="Best single trade. How much the best round-trip returned.">Best single trade</span></dt>
+                            <dd class="bt-pos">{{ result.trade_stats.best_trade_fmt }}</dd>
+                        </div>
+                        <div>
+                            <dt><span data-tip="Worst single trade.">Worst single trade</span></dt>
+                            <dd class="bt-neg">{{ result.trade_stats.worst_trade_fmt }}</dd>
+                        </div>
+                        <div>
+                            <dt><span data-tip="Total profits divided by total losses. Above 1 means wins outweigh losses in dollar terms. Above 2 is solid.">Profit factor</span></dt>
+                            <dd>{{ result.trade_stats.profit_factor_fmt }}</dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </details>
+
+        <!-- 6. Trade log (collapsed) -->
+        <details class="bt-advanced">
+            <summary>Full trade log ({{ result.trade_stats.num_trades }} round trips)</summary>
+            {% if result.trades %}
+            <div class="bt-tablewrap">
+                <table class="bt-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Action</th>
+                            <th>Price</th>
+                            <th>Trade P&amp;L</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in result.trades %}
+                        <tr>
+                            <td>{{ t.date }}</td>
+                            <td class="{{ 'bt-pos' if t.side == 'BUY' else 'bt-neg' }}">
+                                {{ 'Buy' if t.side == 'BUY' else 'Sell' }}
+                            </td>
+                            <td>${{ '%.2f'|format(t.price) }}</td>
+                            <td>
+                                {% if t.pnl is none %}
+                                    <span class="bt-mute">·</span>
+                                {% else %}
+                                    <span class="{{ 'bt-pos' if t.pnl >= 0 else 'bt-neg' }}">
+                                        {{ '%+.2f'|format(t.pnl * 100) }}%
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="bt-mute">No trades were executed during this window.</p>
+            {% endif %}
+        </details>
+
+        {% endif %}
+    </div>
+</section>
+
+{% if tool %}
+<section class="tool-about" id="about-project">
+    <h2 class="tool-about-title">About this project</h2>
+    <div class="tool-about-grid">
+        <div class="tool-about-main">
+            <h3>The problem</h3>
+            <p>{{ tool.problem }}</p>
+            <h3>Process &amp; challenges</h3>
+            <p>{{ tool.process }}</p>
+            <p>{{ tool.challenges }}</p>
+        </div>
+        <aside class="tool-about-side">
+            <h3>Tech stack</h3>
+            <div class="chip-row">
+                {% for s in tool.stack %}<span class="chip">{{ s }}</span>{% endfor %}
+            </div>
+            <h3>Source &amp; demo</h3>
+            <p class="tool-about-note">This page is the live demo. The full, commented source is on GitHub.</p>
+            <a class="btn btn-ghost" href="{{ tool.source_url }}" target="_blank" rel="noopener">View source ↗</a>
+        </aside>
+    </div>
+</section>
+{% endif %}
+
+<script>
+    (function() {
+        const field = document.getElementById('btThemeField');
+        if (!field) return;
+        const apply = () => { field.value = document.documentElement.getAttribute('data-theme') || 'dark'; };
+        apply();
+        new MutationObserver(apply).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    })();
+</script>
+{% endblock %}
