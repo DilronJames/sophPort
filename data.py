@@ -159,7 +159,7 @@ PROJECTS = [
         ),
         "repo": "",
         "demo": "https://editor.p5js.org/dilpreet.singh/sketches",
-        "image": "",
+        "image": "images/p5js.png",
         "accent": "violet",
         "featured": True,
         "size": "lg",
@@ -203,51 +203,57 @@ PROJECTS = [
         ),
         "repo": "https://github.com/DilronJames/DreamDest",
         "demo": "",
-        "image": "",
+        "image": "images/dreamdest.jpg",
         "accent": "teal",
         "featured": False,
         "size": "md",
         "tags": ["Web", "Front-End"],
     },
     {
-        "slug": "mix-match",
-        "title": "Mix-Match Website Challenge",
-        "tagline": "Reverse-engineering a designer's mockup into clean, semantic HTML & CSS.",
+        "slug": "godot-platformer",
+        "title": "2D Platformer (Godot)",
+        "tagline": "A side-scrolling platformer built in the Godot game engine with GDScript.",
         "summary": (
-            "A web challenge where the goal was to match a given visual design pixel-for-pixel using "
-            "only HTML and CSS. The constraint sharpened my eye for spacing, alignment, and the "
-            "small typography choices that separate amateur layouts from professional ones."
+            "A 2D side-scrolling platformer I built to learn real game development in the Godot "
+            "engine. It features a player character with gravity-based jump physics, hand-built "
+            "tile levels made from a custom tileset, and collision handling, all scripted in "
+            "GDScript. Building it meant stepping outside web development into a full game engine "
+            "with its own scene system, nodes, and physics loop."
         ),
         "problem": (
-            "Designs in the real world come from designers, not developers. I needed to practice "
-            "translating a finished visual into working code without being able to fall back on "
-            "'just make it look okay'."
+            "Up to this point I had only built web pages and command-line programs. I wanted to "
+            "understand how a real game engine works: scenes, nodes, a physics update loop, "
+            "sprites, and collision, rather than drawing to a canvas by hand."
         ),
-        "stack": ["HTML5", "CSS3", "Flexbox"],
-        "concepts": ["Pixel-accurate layout", "Box model", "Spacing systems", "Color matching"],
+        "stack": ["Godot Engine", "GDScript", "2D TileMaps", "Sprite animation"],
+        "concepts": ["Gravity & jump physics", "Collision detection", "TileMaps", "Input handling",
+                     "Scene / node architecture", "Sprite animation"],
         "process": (
-            "I used browser DevTools to inspect element dimensions on the reference image, then "
-            "built a CSS spacing scale (4 / 8 / 16 / 32px) before writing any layout code. This "
-            "discipline-first approach saved me from the usual 'add margin until it looks right' trap."
+            "I started by learning Godot's scene-and-node model, then built the player as a "
+            "CharacterBody2D, applying gravity and jump velocity inside _physics_process. I "
+            "designed the levels with a TileMap and a custom tileset, and tuned the jump height "
+            "and gravity by feel until the movement felt responsive instead of floaty."
         ),
         "research_topic": (
-            "Design tokens, which means treating spacing, color, and type as a small set of reusable "
-            "variables. It's how professional design systems are built."
+            "Godot's physics process and CharacterBody2D movement model, which I learned from the "
+            "official Godot documentation since the engine was not covered in class."
         ),
         "challenges": (
-            "Getting precise vertical rhythm across mixed font sizes, and reproducing subtle box-shadows "
-            "that the design used heavily."
+            "Making the jump feel responsive rather than floaty meant repeatedly tuning gravity and "
+            "jump velocity. The trickiest bug was the character catching on or clipping through tile "
+            "edges during collisions, which I fixed by adjusting the collision shape and how move "
+            "and slide resolved against the tilemap."
         ),
         "v2": (
-            "Rebuild the same design in Tailwind CSS to compare it with hand-written CSS, and add a "
-            "dark mode version."
+            "Add enemies, collectibles, a score system, and multiple levels with a level-select "
+            "menu, then publish a playable web export."
         ),
-        "repo": "https://github.com/DilronJames/Mix-Match-Website-Challenge",
+        "repo": "",
         "demo": "",
-        "image": "",
-        "accent": "pink",
+        "image": "images/godot-game.png",
+        "accent": "amber",
         "featured": False,
         "size": "md",
-        "tags": ["Web", "Design"],
+        "tags": ["Game Dev", "Godot", "GDScript"],
     },
 ]

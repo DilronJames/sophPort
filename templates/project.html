@@ -19,7 +19,7 @@
     </header>
 
     {# Visual proof: screenshot. Set "image" in data.py (e.g. "images/p5js.png"). #}
-    {% if project.image %}
+    {% if has_image %}
     <figure class="project-shot">
         <img src="{{ url_for('static', filename=project.image) }}" alt="Screenshot of {{ project.title }}" loading="lazy">
     </figure>

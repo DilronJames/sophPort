@@ -35,7 +35,13 @@ def project_detail(slug):
     project = next((p for p in PROJECTS if p["slug"] == slug), None)
     if project is None:
         abort(404)
-    return render_template("project.html", project=project, bio=BIO, contact=CONTACT)
+    # Only show the screenshot if the image file actually exists; otherwise the
+    # template falls back to a clean placeholder instead of a broken-image icon.
+    has_image = bool(project.get("image")) and os.path.exists(
+        os.path.join(app.static_folder, project["image"])
+    )
+    return render_template("project.html", project=project, bio=BIO,
+                           contact=CONTACT, has_image=has_image)
 
 
 @app.route("/favicon.ico")
