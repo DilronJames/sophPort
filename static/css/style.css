@@ -2980,3 +2980,56 @@ main > .reveal:nth-of-type(4) { animation-delay: .26s; }
     transition: color .15s, border-color .15s, background .15s;
 }
 .copy-email:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ============================================================
+   RESPONSIVE HARDENING — phones, tablets, small windows
+   ============================================================ */
+
+/* Nothing should ever push the page wider than the screen */
+img, svg, video, canvas, iframe { max-width: 100%; }
+img, video, canvas { height: auto; }
+pre { max-width: 100%; overflow-x: auto; }
+
+/* Data tables scroll sideways inside their box instead of breaking the layout */
+.bt-tablewrap, .pw-tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.bt-table, .pw-table { min-width: 440px; }
+
+/* ---- Tablets / small laptops ---- */
+@media (max-width: 768px) {
+    .hero-min    { padding: 88px 6vw 56px; }
+    .section-min { padding: 52px 6vw; }
+    .tool-hero   { padding: 80px 6vw 20px; }
+    .bt-shell    { padding: 12px 6vw 56px; gap: 22px; }
+    .bt-form-card { position: static; top: auto; }   /* don't pin the form once stacked */
+    .tool-about  { padding: 32px 6vw 56px; }
+    .section-title { font-size: 1.4rem; }
+}
+
+/* ---- Phones ---- */
+@media (max-width: 480px) {
+    .nav { padding: 12px 5vw; }
+    .hero-min { padding: 68px 5vw 44px; }
+    .section-min, .tool-hero, .pw-shell, .tool-about,
+    .bt-shell { padding-left: 5vw; padding-right: 5vw; }
+
+    .hero-actions { width: 100%; }
+    .hero-actions .btn { flex: 1 1 auto; justify-content: center; }  /* buttons fill the row */
+
+    .section-title { font-size: 1.3rem; }
+    .tool-title { font-size: clamp(1.55rem, 7vw, 2rem); }
+
+    .work-min-row { grid-template-columns: 1fr; }     /* title/desc stack, arrow hidden */
+    .work-min-arrow { display: none; }
+
+    .bt-table, .pw-table { font-size: 0.82rem; min-width: 380px; }
+    .contact-key { width: 72px; }
+    .pw-input-wrap input { font-size: 1rem; }
+}
+
+/* ---- Very small phones ---- */
+@media (max-width: 360px) {
+    .nav-links { gap: 10px; }
+    .nav-links a { font-size: 11.5px; }
+    .hero-name { font-size: clamp(2rem, 11vw, 2.6rem); }
+    .btn { padding: 11px 16px; font-size: 13px; }
+}
