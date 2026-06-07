@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.title }} · {{ bio.name }}{% endblock %}
+
+{% block content %}
+<article class="project-page accent-{{ project.accent }}">
+    <a class="back-link" href="{{ url_for('index') }}#work">← Back to all work</a>
+
+    <header class="project-header">
+        <div class="tag-row">
+            {% for t in project.tags %}<span class="tag">{{ t }}</span>{% endfor %}
+        </div>
+        <h1>{{ project.title }}</h1>
+        <p class="project-lede">{{ project.tagline }}</p>
+        <div class="header-actions">
+            {% if project.repo %}<a class="btn btn-primary" href="{{ project.repo }}" target="_blank" rel="noopener">Source code ↗</a>{% endif %}
+            {% if project.demo %}<a class="btn btn-ghost" href="{{ project.demo }}" target="_blank" rel="noopener">Live demo ↗</a>{% endif %}
+        </div>
+    </header>
+
+    {# Visual proof: screenshot. Set "image" in data.py (e.g. "images/p5js.png"). #}
+    {% if project.image %}
+    <figure class="project-shot">
+        <img src="{{ url_for('static', filename=project.image) }}" alt="Screenshot of {{ project.title }}" loading="lazy">
+    </figure>
+    {% else %}
+    <figure class="project-shot project-shot-empty" aria-hidden="true">
+        <div class="thumb-shape"></div>
+        <span class="thumb-letter">{{ project.title[:1] }}</span>
+    </figure>
+    {% endif %}
+
+    <div class="project-grid-detail">
+        <section class="block">
+            <h2>The problem</h2>
+            <p>{{ project.problem }}</p>
+        </section>
+
+        <section class="block">
+            <h2>What it does</h2>
+            <p>{{ project.summary }}</p>
+        </section>
+
+        <section class="block">
+            <h2>Technical stack</h2>
+            <div class="chip-row">
+                {% for s in project.stack %}<span class="chip">{{ s }}</span>{% endfor %}
+            </div>
+        </section>
+
+        {% if project.concepts %}
+        <section class="block">
+            <h2>Key concepts</h2>
+            <div class="chip-row">
+                {% for c in project.concepts %}<span class="chip chip-accent">{{ c }}</span>{% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <section class="block block-wide">
+            <h2>My process &amp; challenges</h2>
+            <p>{{ project.process }}</p>
+            {% if project.challenges %}<p><strong>Obstacles:</strong> {{ project.challenges }}</p>{% endif %}
+        </section>
+
+        {% if project.research_topic %}
+        <section class="block block-wide research">
+            <h2>Self-researched topic</h2>
+            <p>{{ project.research_topic }}</p>
+        </section>
+        {% endif %}
+
+        {% if project.v2 %}
+        <section class="block block-wide">
+            <h2>If I built v2.0</h2>
+            <p>{{ project.v2 }}</p>
+        </section>
+        {% endif %}
+    </div>
+
+    <nav class="project-nav">
+        <a class="btn btn-ghost" href="{{ url_for('index') }}#work">← All work</a>
+        <a class="btn btn-primary" href="{{ contact.github }}" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+</article>
+{% endblock %}

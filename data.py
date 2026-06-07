@@ -67,7 +67,7 @@ TOOLS = [
             "market data, and translating finance metrics such as Sharpe ratio, Sortino ratio, and "
             "max drawdown into language a non-expert can actually understand."
         ),
-        "source_url": "https://github.com/DilronJames",
+        "source_url": "https://github.com/DilronJames/backtester-MA-Crossover",
     },
     {
         "slug": "password-strength",
@@ -99,7 +99,7 @@ TOOLS = [
             "(sequences, repeats, keyboard walks, and dictionary words) without flagging strong "
             "passwords by mistake."
         ),
-        "source_url": "https://github.com/DilronJames",
+        "source_url": "https://github.com/DilronJames/password-testr",
     },
 ]
 
@@ -157,7 +157,7 @@ PROJECTS = [
             "Rebuild the whole studio as a single-page app with a sketch picker, persistent settings, "
             "and shareable URLs that encode each sketch's parameters."
         ),
-        "repo": "https://github.com/DilronJames/cis-academy-freshman-year-portfolio-DilronJames",
+        "repo": "",
         "demo": "https://editor.p5js.org/dilpreet.singh/sketches",
         "image": "",
         "accent": "violet",

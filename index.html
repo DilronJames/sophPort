@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="hero-min reveal">
+    <p class="hero-eyebrow"><span class="hero-dot"></span> Computer &amp; Information Sciences</p>
+    <h1 class="hero-name">{{ bio.name }}</h1>
+    <p class="hero-bio">{{ bio.tagline }}</p>
+    <p class="hero-school">{{ bio.school }}</p>
+    <div class="hero-actions">
+        <a class="btn btn-primary" href="#work">See my work</a>
+        <a class="btn btn-ghost" href="{{ contact.github }}" target="_blank" rel="noopener">GitHub</a>
+    </div>
+</section>
+
+<!-- ABOUT -->
+<section class="section-min reveal" id="about">
+    <h2 class="section-title">About</h2>
+    <p class="section-body">{{ bio.summary }}</p>
+    <ul class="about-list">
+        {% for it in bio.interests %}
+        <li>
+            <span class="about-list-key">{{ it.name }}</span>
+            <span class="about-list-val">{{ it.blurb }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+</section>
+
+<!-- WORK -->
+<section class="section-min reveal" id="work">
+    <h2 class="section-title">Work</h2>
+    <p class="section-body">A few things I've built. The first two are tools you can actually try out right here.</p>
+
+    <ul class="work-min">
+        {% for t in tools %}
+        <li>
+            <a class="work-min-row" href="{{ url_for(t.url_endpoint) }}">
+                <div class="work-min-main">
+                    <h3>{{ t.title }}</h3>
+                    <p>{{ t.tagline }}</p>
+                    <span class="work-min-stack">{{ t.stack | join(' · ') }}</span>
+                </div>
+                <span class="work-min-arrow" aria-hidden="true">→</span>
+            </a>
+        </li>
+        {% endfor %}
+        {% for p in projects %}
+        <li>
+            <a class="work-min-row" href="{{ url_for('project_detail', slug=p.slug) }}">
+                <div class="work-min-main">
+                    <h3>{{ p.title }}</h3>
+                    <p>{{ p.tagline }}</p>
+                    <span class="work-min-stack">{{ p.stack[:4] | join(' · ') }}</span>
+                </div>
+                <span class="work-min-arrow" aria-hidden="true">→</span>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</section>
+
+<!-- SKILLS -->
+<section class="section-min reveal" id="skills">
+    <h2 class="section-title">Skills</h2>
+    <p class="skills-line">{{ bio.skills | join(' · ') }}</p>
+</section>
+
+<!-- CONTACT -->
+<section class="section-min reveal" id="contact">
+    <h2 class="section-title">Contact</h2>
+    <p class="section-body">
+        I'm open to internships, collaboration, and feedback. Send me a message below, or reach me
+        directly through any of the links.
+    </p>
+
+    <div class="contact-grid">
+        <form class="contact-form" id="contactForm">
+            <label class="contact-field">
+                <span>Your name</span>
+                <input type="text" name="name" id="cfName" required maxlength="80" autocomplete="name">
+            </label>
+            <label class="contact-field">
+                <span>Your email</span>
+                <input type="email" name="email" id="cfEmail" required maxlength="120" autocomplete="email">
+            </label>
+            <label class="contact-field">
+                <span>Message</span>
+                <textarea name="message" id="cfMessage" rows="5" required maxlength="2000"></textarea>
+            </label>
+            <button class="btn btn-primary" type="submit" id="cfSubmit">Send message</button>
+            <p class="contact-form-note" id="cfNote" role="status" aria-live="polite"></p>
+        </form>
+
+        <ul class="contact-list">
+            <li>
+                <span class="contact-key">Email</span>
+                <span class="contact-email-wrap">
+                    <a href="mailto:{{ contact.email }}">{{ contact.email }}</a>
+                    <button type="button" class="copy-email" id="copyEmail"
+                            data-email="{{ contact.email }}" aria-label="Copy email address">Copy</button>
+                </span>
+            </li>
+            <li>
+                <span class="contact-key">GitHub</span>
+                <a href="{{ contact.github }}" target="_blank" rel="noopener">{{ contact.github.split('/')[-1] }}</a>
+            </li>
+            {% if contact.linkedin %}
+            <li>
+                <span class="contact-key">LinkedIn</span>
+                <a href="{{ contact.linkedin }}" target="_blank" rel="noopener">{{ contact.linkedin }}</a>
+            </li>
+            {% endif %}
+            {% if contact.location %}
+            <li>
+                <span class="contact-key">Location</span>
+                <span>{{ contact.location }}</span>
+            </li>
+            {% endif %}
+            {% if resume %}
+            <li>
+                <span class="contact-key">Résumé</span>
+                <a href="{{ url_for('resume') }}" target="_blank" rel="noopener">Download PDF ↗</a>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+</section>
+
+<script>
+(function () {
+    const TO  = "{{ contact.email }}";
+    const KEY = "{{ contact.web3forms_key }}";   // empty until you add a Web3Forms key
+
+    // ---- Copy email button (always works, no mail app needed) ----
+    const copyBtn = document.getElementById('copyEmail');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', async function () {
+            const addr = copyBtn.dataset.email;
+            try {
+                await navigator.clipboard.writeText(addr);
+            } catch (e) {
+                const t = document.createElement('textarea');
+                t.value = addr; document.body.appendChild(t); t.select();
+                try { document.execCommand('copy'); } catch (e2) {}
+                document.body.removeChild(t);
+            }
+            const old = copyBtn.textContent;
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => { copyBtn.textContent = old; }, 1600);
+        });
+    }
+
+    // ---- Contact form ----
+    const form = document.getElementById('contactForm');
+    if (!form) return;
+    const note = document.getElementById('cfNote');
+    const submit = document.getElementById('cfSubmit');
+
+    function openMail(name, email, message) {
+        const subject = encodeURIComponent('Portfolio message from ' + (name || 'a visitor'));
+        const body = encodeURIComponent((message || '') + '\n\n— ' + name + ' (' + email + ')');
+        window.location.href = 'mailto:' + TO + '?subject=' + subject + '&body=' + body;
+    }
+
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const name = document.getElementById('cfName').value.trim();
+        const email = document.getElementById('cfEmail').value.trim();
+        const message = document.getElementById('cfMessage').value.trim();
+
+        // No Web3Forms key set yet → open the visitor's mail app instead.
+        if (!KEY) {
+            openMail(name, email, message);
+            note.className = 'contact-form-note';
+            note.textContent = "Opening your email app. If nothing happens, use the Copy button to grab my address.";
+            return;
+        }
+
+        submit.disabled = true;
+        note.className = 'contact-form-note';
+        note.textContent = 'Sending…';
+        try {
+            const res = await fetch('https://api.web3forms.com/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({
+                    access_key: KEY,
+                    subject: 'Portfolio message from ' + (name || 'a visitor'),
+                    from_name: name,
+                    name: name, email: email, message: message,
+                }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                form.reset();
+                note.className = 'contact-form-note is-ok';
+                note.textContent = 'Thanks! Your message was sent.';
+            } else {
+                throw new Error(data.message || 'send failed');
+            }
+        } catch (err) {
+            // Network blocked or error → fall back to the mail app.
+            openMail(name, email, message);
+            note.className = 'contact-form-note';
+            note.textContent = "Couldn't send directly, so I opened your email app instead.";
+        } finally {
+            submit.disabled = false;
+        }
+    });
+})();
+</script>
+
+{% endblock %}
