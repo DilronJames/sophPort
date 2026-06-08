@@ -248,7 +248,7 @@ PROJECTS = [
             "Add enemies, collectibles, a score system, and multiple levels with a level-select "
             "menu, then publish a playable web export."
         ),
-        "repo": "",
+        "repo": "https://github.com/DilronJames/MiniGame",
         "demo": "",
         "image": "images/godot-game.png",
         "accent": "amber",
